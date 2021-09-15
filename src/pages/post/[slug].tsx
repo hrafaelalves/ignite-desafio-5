@@ -1,9 +1,14 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
 
-import { RichText } from 'prismic-dom';
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+
 import Head from 'next/head';
 import Prismic from '@prismicio/client';
 
+import { FiCalendar, FiUser, FiClock } from 'react-icons/fi';
+import { useMemo } from 'react';
+import { useRouter } from 'next/router';
 import { getPrismicClient } from '../../services/prismic';
 
 import commonStyles from '../../styles/common.module.scss';
@@ -31,15 +36,86 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps): JSX.Element {
+  const router = useRouter();
+
+  const formattedPost = useMemo(() => {
+    const formattedDate = format(
+      new Date(post.first_publication_date),
+      'dd MMM yyyy',
+      { locale: ptBR }
+    );
+
+    return { ...post, first_publication_date: formattedDate };
+  }, [post]);
+
+  const readOfTime = useMemo(() => {
+    const words = post.data.content.reduce((accumulate, current) => {
+      const { heading, body } = current;
+
+      const countCurrentHeading = heading.split(' ');
+
+      const countBodyCurrent = body.reduce((accumulate_body, current_body) => {
+        const countBody = current_body.text.split(' ');
+
+        return accumulate_body + countBody.length;
+      }, 0);
+
+      return accumulate + countCurrentHeading.length + countBodyCurrent;
+    }, 0);
+
+    return Math.ceil(words / 200);
+  }, [post]);
+
+  if (router.isFallback) {
+    return <div>Carregando...</div>;
+  }
+
   return (
     <>
       <Head>
         <title>Spacetraveling | {post.data.title}</title>
       </Head>
-      <main className={commonStyles.wrapper}>
-        <article className={styles.post}>
-          <h1>{post.data.title}</h1>
-          <time>{post.first_publication_date}</time>
+
+      <main>
+        <img
+          className={styles.postBanner}
+          src={formattedPost.data.banner.url}
+          alt=""
+        />
+        <article className={`${styles.postContainer} ${commonStyles.wrapper}`}>
+          <header>
+            <h1>{formattedPost.data.title}</h1>
+
+            <div>
+              <time>
+                <FiCalendar /> {formattedPost.first_publication_date}
+              </time>
+
+              <span>
+                <FiUser /> {formattedPost.data.author}
+              </span>
+
+              <span>
+                <FiClock /> {readOfTime} min
+              </span>
+            </div>
+          </header>
+
+          {formattedPost.data.content.map(item => {
+            return (
+              <section key={item.heading} className={styles.postContent}>
+                <h3>{item.heading}</h3>
+
+                {item.body.map(paragraph => (
+                  <div
+                    key={paragraph.text}
+                    className={styles.postText}
+                    dangerouslySetInnerHTML={{ __html: paragraph.text }}
+                  />
+                ))}
+              </section>
+            );
+          })}
         </article>
       </main>
     </>
@@ -72,21 +148,9 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const prismic = getPrismicClient();
   const response = await prismic.getByUID('posts', String(slug), {});
 
-  const post = {
-    first_publication_date: response.first_publication_date,
-    data: {
-      title: response.data.title,
-      banner: {
-        url: response.data.banner.url,
-      },
-      author: response.data.author,
-      content: response.data.content,
-    },
-  };
-
   return {
     props: {
-      post,
+      post: response,
     },
     redirect: 60 * 60, // 1 hora
   };

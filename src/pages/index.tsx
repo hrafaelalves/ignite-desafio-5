@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { FiCalendar, FiUser } from 'react-icons/fi';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useCallback } from 'react';
 import { getPrismicClient } from '../services/prismic';
 
@@ -40,7 +40,17 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
     postsPagination.next_page
   );
 
-  const [posts, setPosts] = useState<Post[]>(postsPagination.results);
+  const [posts, setPosts] = useState<Post[]>(() => {
+    return postsPagination.results.map(post => {
+      const formattedDate = format(
+        new Date(post.first_publication_date),
+        'dd MMM yyyy',
+        { locale: ptBR }
+      );
+
+      return { ...post, first_publication_date: formattedDate };
+    });
+  });
 
   const handleLoadMore = useCallback(async () => {
     const response = await fetch(nextPage);
@@ -86,8 +96,7 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
 
                   <div>
                     <span>
-                      <FiCalendar />
-                      {post.first_publication_date}
+                      <FiCalendar /> {post.first_publication_date}
                     </span>
 
                     <span>
@@ -134,13 +143,7 @@ export const getStaticProps: GetStaticProps = async () => {
         subtitle: post.data.subtitle,
         author: post.data.author,
       },
-      first_publication_date: format(
-        new Date(post.first_publication_date),
-        'dd MMM yyyy',
-        {
-          locale: ptBR,
-        }
-      ),
+      first_publication_date: post.first_publication_date,
     };
   });
 
