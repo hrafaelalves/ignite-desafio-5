@@ -7,7 +7,7 @@ import Head from 'next/head';
 import Prismic from '@prismicio/client';
 
 import { FiCalendar, FiUser, FiClock } from 'react-icons/fi';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { getPrismicClient } from '../../services/prismic';
 
@@ -70,6 +70,26 @@ export default function Post({ post }: PostProps): JSX.Element {
     return <div>Carregando...</div>;
   }
 
+  useEffect(() => {
+    const scriptParentNode = document.getElementById('comments');
+    // if (!scriptParentNode) return;
+
+    const script = document.createElement('script');
+    script.src = 'https://utteranc.es/client.js';
+    script.async = true;
+    script.setAttribute('repo', 'hrafaelalves/spacetraveling-comments');
+    script.setAttribute('issue-term', 'pathname');
+    script.setAttribute('theme', 'photon-dark');
+    script.setAttribute('crossorigin', 'anonymous');
+
+    scriptParentNode.appendChild(script);
+
+    // eslint-disable-next-line consistent-return
+    return () => {
+      scriptParentNode.removeChild(scriptParentNode.firstChild as Node);
+    };
+  }, []);
+
   return (
     <>
       <Head>
@@ -116,6 +136,12 @@ export default function Post({ post }: PostProps): JSX.Element {
               </section>
             );
           })}
+
+          <section className={styles.postPaginate}>
+            <p>teste</p>
+          </section>
+
+          <section id="comments" />
         </article>
       </main>
     </>
