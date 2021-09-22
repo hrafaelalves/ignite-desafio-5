@@ -1,9 +1,19 @@
-import { Client, linkResolver } from '../../prismic-configuration';
+import { Document } from '@prismicio/client/types/documents';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { getPrismicClient } from '../../services/prismic';
 
-export default async (req, res) => {
+function linkResolver(doc: Document): string {
+  if (doc.type === 'posts') {
+    return `/post/${doc.uid}`;
+  }
+  return '/';
+}
+
+export default async (req: NextApiRequest, res: NextApiResponse) => {
   const { token: ref, documentId } = req.query;
-  const redirectUrl = await Client(req)
-    .getPreviewResolver(ref, documentId)
+
+  const redirectUrl = await getPrismicClient(req)
+    .getPreviewResolver(ref as string, documentId as string)
     .resolve(linkResolver, '/');
 
   if (!redirectUrl) {
@@ -17,5 +27,6 @@ export default async (req, res) => {
     <script>window.location.href = '${redirectUrl}'</script>
     </head>`
   );
+
   res.end();
 };
