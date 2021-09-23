@@ -37,11 +37,18 @@
         margin-left: 1.5rem;
       }
     }
+
+    em{
+      margin-top: 1rem;
+      display: block;
+      color: var(--gray-400);
+      font-size: 0.875rem;
+    }
   }
 }
 
 .postContent{
-  & + section{
+  & + section:not(.postPaginate){
     margin-top: 2.5rem;
   }
 
@@ -56,5 +63,36 @@
     font-size: 1.125rem;
     line-height: 1.5rem;
     color: var(--gray-300);
+  }
+}
+
+.postPaginate{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: center;
+  grid-gap: 2rem;
+
+  padding-top: 3.75rem;
+
+  margin: 3.75rem 0 3.75rem;
+
+  border-top: 1px solid rgba(215, 215, 215, 0.1);
+
+  a{
+    p{
+      color: var(--gray-100);
+      font-size: 1.125rem;
+    }
+
+    span{
+      color: var(--pink-500);
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+
+    &:last-child{
+      text-align: right;
+    }
   }
 }
