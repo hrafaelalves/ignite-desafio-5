@@ -12,6 +12,7 @@ import Post, { getStaticProps, getStaticPaths } from '../../pages/post/[slug]';
 
 interface Post {
   first_publication_date: string | null;
+  last_publication_date: string | null;
   data: {
     title: string;
     banner: {
@@ -25,8 +26,16 @@ interface Post {
   };
 }
 
+interface PostPagination {
+  title: string;
+  uid: string;
+}
+
 interface PostProps {
   post: Post;
+  preview: boolean;
+  prevPost: PostPagination | null;
+  nextPost: PostPagination | null;
 }
 
 interface GetStaticPropsResult {
@@ -47,6 +56,7 @@ const mockedQueryReturn = {
 const mockedGetByUIDReturn = {
   uid: 'como-utilizar-hooks',
   first_publication_date: '2021-03-25T19:25:28+0000',
+  last_publication_date: '2021-03-25T19:25:28+0000',
   data: {
     title: 'Como utilizar Hooks',
     subtitle: 'Pensando em sincronização em vez de ciclos de vida',
@@ -234,7 +244,9 @@ describe('Post', () => {
   it('should be able to render post document info', () => {
     const postProps = mockedGetByUIDReturn;
 
-    render(<Post post={postProps} />);
+    render(
+      <Post post={postProps} preview={false} nextPost={null} prevPost={null} />
+    );
 
     screen.getByText('Como utilizar Hooks');
     screen.getByText('25 mar 2021');
@@ -254,7 +266,9 @@ describe('Post', () => {
 
     const postProps = mockedGetByUIDReturn;
 
-    render(<Post post={postProps} />);
+    render(
+      <Post post={postProps} preview={false} nextPost={null} prevPost={null} />
+    );
 
     screen.getByText('Carregando...');
   });

@@ -62,7 +62,7 @@ export default function Post({
 
     const formattedLastDate = format(
       new Date(post.last_publication_date),
-      "dd MMM yyyy ', às' HH:mm",
+      "'* editado em' dd MMM yyyy', às' HH:mm",
       { locale: ptBR }
     );
 
@@ -93,7 +93,8 @@ export default function Post({
 
   useEffect(() => {
     const scriptParentNode = document.getElementById('comments');
-    // if (!scriptParentNode) return;
+
+    console.log(scriptParentNode);
 
     const script = document.createElement('script');
     script.src = 'https://utteranc.es/client.js';
@@ -145,7 +146,7 @@ export default function Post({
               </span>
             </div>
 
-            <em>* editado em {formattedPost.last_publication_date}</em>
+            <em>{formattedPost.last_publication_date}</em>
           </header>
 
           {formattedPost.data.content.map(item => {
@@ -249,10 +250,10 @@ export const getStaticProps: GetStaticProps = async ({
       post: response,
       preview,
       nextPost: nextPost
-        ? { title: nextPost.data.title, uid: nextPost.uid }
+        ? { title: nextPost.data?.title, uid: nextPost.uid }
         : null,
       prevPost: prevPost
-        ? { title: prevPost.data.title, uid: prevPost.uid }
+        ? { title: prevPost.data?.title, uid: prevPost.uid }
         : null,
     },
     redirect: 60 * 60 * 24, // 24 hora
